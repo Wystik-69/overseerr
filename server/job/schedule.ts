@@ -10,6 +10,9 @@ import { getSettings } from '@server/lib/settings';
 import watchlistSync from '@server/lib/watchlistsync';
 import logger from '@server/logger';
 import schedule from 'node-schedule';
+import subscriptionManager from '@server/lib/subscriptions';
+import plexSubscriptions from '@server/lib/plexsubscriptions';
+import plexAccountSharingManager from '@server/lib/plexaccountsharing';
 
 interface ScheduledJob {
   id: JobId;
@@ -182,6 +185,50 @@ export const startJobs = (): void => {
       refreshToken.run();
     }),
   });
+  
+  // Schedule to check for expired subscriptions
+  scheduledJobs.push({
+    id: 'check-expired-subscriptions',
+    name: 'Check Expired Subscriptions',
+    type: 'process',
+    interval: 'seconds',
+    cronSchedule: jobs['check-expired-subscriptions'].schedule,
+    job: schedule.scheduleJob(jobs['check-expired-subscriptions'].schedule, () => {
+      logger.info('Starting scheduled job: Check Expired Subscriptions', {
+        label: 'Jobs',
+      });
+      subscriptionManager.checkExpiredSubscriptions();
+    }),
+  });
+  
+  // Schedule to check for Plex subscriptions status and kill streams for expired users
+  scheduledJobs.push({
+    id: 'plex-subscriptions-status',
+    name: 'Plex Subscriptions Status',
+    type: 'process',
+    interval: 'seconds',
+    cronSchedule: jobs['plex-subscriptions-status'].schedule,
+    job: schedule.scheduleJob(jobs['plex-subscriptions-status'].schedule, () => {
+      logger.info('Starting scheduled job: Plex Subscriptions Status', {
+        label: 'Jobs',
+      });
+      plexSubscriptions.checkPlexSubscriptionsStatus();
+    }),
+  });
 
+  // Schedule to check if users are sharing their account and kill streams if IP addresses don't match
+  scheduledJobs.push({
+    id: 'plex-account-sharing',
+    name: 'Plex Account Sharing',
+    type: 'process',
+    interval: 'seconds',
+    cronSchedule: jobs['plex-account-sharing'].schedule,
+    job: schedule.scheduleJob(jobs['plex-account-sharing'].schedule, () => {
+      logger.info('Starting scheduled job: Plex Account Sharing', {
+        label: 'Jobs',
+      });
+      plexAccountSharingManager.checkAccountSharing();
+    }),
+  });
   logger.info('Scheduled jobs loaded', { label: 'Jobs' });
 };

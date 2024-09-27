@@ -53,8 +53,9 @@ const StatusChecker = () => {
       appear
       show={
         !alertDismissed &&
-        ((hasPermission(Permission.ADMIN) && data.restartRequired) ||
-          data.commitTag !== process.env.commitTag)
+        // Removed the commit tag comparison to avoid update prompt spam
+        hasPermission(Permission.ADMIN) &&
+        data.restartRequired
       }
     >
       {hasPermission(Permission.ADMIN) && data.restartRequired ? (

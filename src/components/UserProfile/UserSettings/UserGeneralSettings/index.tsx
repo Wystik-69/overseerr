@@ -22,6 +22,7 @@ import { defineMessages, useIntl } from 'react-intl';
 import { useToasts } from 'react-toast-notifications';
 import useSWR from 'swr';
 import * as Yup from 'yup';
+import { format } from 'date-fns';
 
 const messages = defineMessages({
   general: 'General',
@@ -55,6 +56,8 @@ const messages = defineMessages({
   plexwatchlistsyncseries: 'Auto-Request Series',
   plexwatchlistsyncseriestip:
     'Automatically request series on your <PlexWatchlistSupportLink>Plex Watchlist</PlexWatchlistSupportLink>',
+  subscriptionStatus: 'Subscription Status',
+  subscriptionExpiration: 'Subscription Expiration',
 });
 
 const UserGeneralSettings = () => {
@@ -64,22 +67,28 @@ const UserGeneralSettings = () => {
   const [movieQuotaEnabled, setMovieQuotaEnabled] = useState(false);
   const [tvQuotaEnabled, setTvQuotaEnabled] = useState(false);
   const router = useRouter();
-  const {
-    user,
-    hasPermission,
-    revalidate: revalidateUser,
-  } = useUser({
+  const { user, hasPermission, revalidate: revalidateUser } = useUser({
     id: Number(router.query.userId),
   });
   const { user: currentUser, hasPermission: currentHasPermission } = useUser();
   const { currentSettings } = useSettings();
-  const {
-    data,
-    error,
-    mutate: revalidate,
-  } = useSWR<UserSettingsGeneralResponse>(
+  const { data, error, mutate: revalidate } = useSWR<UserSettingsGeneralResponse>(
     user ? `/api/v1/user/${user?.id}/settings/main` : null
   );
+
+
+  // ADDED
+  const [isSubscriptionActive, setIsSubscriptionActive] = useState(false);
+  const [subscriptionExpiration, setSubscriptionExpiration] = useState<Date | null>(null);
+  
+  useEffect(() => {
+    if (data?.subscriptionStatus === 'Active') {
+      setIsSubscriptionActive(true);
+      setSubscriptionExpiration(new Date(data.subscriptionExpiration!));
+    }
+  }, [data]);
+
+
 
   const UserGeneralSettingsSchema = Yup.object().shape({
     discordId: Yup.string()
@@ -88,12 +97,8 @@ const UserGeneralSettings = () => {
   });
 
   useEffect(() => {
-    setMovieQuotaEnabled(
-      data?.movieQuotaLimit != undefined && data?.movieQuotaDays != undefined
-    );
-    setTvQuotaEnabled(
-      data?.tvQuotaLimit != undefined && data?.tvQuotaDays != undefined
-    );
+    setMovieQuotaEnabled(data?.movieQuotaLimit != undefined && data?.movieQuotaDays != undefined);
+    setTvQuotaEnabled(data?.tvQuotaLimit != undefined && data?.tvQuotaDays != undefined);
   }, [data]);
 
   if (!data && !error) {
@@ -113,9 +118,7 @@ const UserGeneralSettings = () => {
         ]}
       />
       <div className="mb-6">
-        <h3 className="heading">
-          {intl.formatMessage(messages.generalsettings)}
-        </h3>
+        <h3 className="heading">{intl.formatMessage(messages.generalsettings)}</h3>
       </div>
       <Formik
         initialValues={{
@@ -130,10 +133,16 @@ const UserGeneralSettings = () => {
           tvQuotaDays: data?.tvQuotaDays,
           watchlistSyncMovies: data?.watchlistSyncMovies,
           watchlistSyncTv: data?.watchlistSyncTv,
+          subscriptionStatus: data?.subscriptionStatus, // New field
+          subscriptionExpiration: data?.subscriptionExpiration // New field
         }}
         validationSchema={UserGeneralSettingsSchema}
         enableReinitialize
         onSubmit={async (values) => {
+          // Format the subscription expiration date before sending it to the server
+          const formattedExpiration = subscriptionExpiration
+            ? subscriptionExpiration.toISOString() // Send as UTC format
+            : null;
           try {
             await axios.post(`/api/v1/user/${user?.id}/settings/main`, {
               username: values.displayName,
@@ -141,22 +150,19 @@ const UserGeneralSettings = () => {
               locale: values.locale,
               region: values.region,
               originalLanguage: values.originalLanguage,
-              movieQuotaLimit: movieQuotaEnabled
-                ? values.movieQuotaLimit
-                : null,
+              movieQuotaLimit: movieQuotaEnabled ? values.movieQuotaLimit : null,
               movieQuotaDays: movieQuotaEnabled ? values.movieQuotaDays : null,
               tvQuotaLimit: tvQuotaEnabled ? values.tvQuotaLimit : null,
               tvQuotaDays: tvQuotaEnabled ? values.tvQuotaDays : null,
               watchlistSyncMovies: values.watchlistSyncMovies,
               watchlistSyncTv: values.watchlistSyncTv,
+              // If the subscription is activated, extend it by 1 year
+              subscriptionStatus: isSubscriptionActive ? 'Active' : 'None',
+			  subscriptionExpiration: isSubscriptionActive ? values.subscriptionExpiration : null,
             });
 
             if (currentUser?.id === user?.id && setLocale) {
-              setLocale(
-                (values.locale
-                  ? values.locale
-                  : currentSettings.locale) as AvailableLocale
-              );
+              setLocale((values.locale ? values.locale : currentSettings.locale) as AvailableLocale);
             }
 
             addToast(intl.formatMessage(messages.toastSettingsSuccess), {
@@ -202,6 +208,58 @@ const UserGeneralSettings = () => {
                   </div>
                 </div>
               </div>
+              
+
+              {/* Subscription Activation */}
+			{currentHasPermission(Permission.ADMIN) && (
+			  <div className="form-row">
+				<label className="text-label">{intl.formatMessage(messages.subscriptionStatus)}</label>
+				<div className="form-input-area">
+				  <div className="form-input-field">
+					<input
+					  type="checkbox"
+					  checked={isSubscriptionActive}
+					  onChange={() => {
+						if (!isSubscriptionActive) {
+						  // Activate subscription and add 1 year
+						  setIsSubscriptionActive(true);
+						  const newExpirationDate = new Date();
+						  newExpirationDate.setFullYear(newExpirationDate.getFullYear() + 1);
+						  setSubscriptionExpiration(newExpirationDate);
+						  setFieldValue('subscriptionExpiration', newExpirationDate);
+						} else {
+						  // Allow deactivation
+						  setIsSubscriptionActive(false);
+						  setSubscriptionExpiration(null);
+						  setFieldValue('subscriptionExpiration', null);
+						}
+					  }}
+					  disabled={values.subscriptionStatus === 'Active'} // Disable if already active
+					/>
+					<span className="ml-2 text-gray-300">
+					  {values.subscriptionStatus === 'Active'
+						? 'Subscription is Active'
+						: 'Activate Subscription'}
+					</span>
+				  </div>
+				</div>
+			  </div>
+			)}
+
+			{/* Subscription Expiration */}
+			<div className="form-row">
+			  <label className="text-label">{intl.formatMessage(messages.subscriptionExpiration)}</label>
+			  <div className="mb-1 text-sm font-medium leading-5 text-gray-400 sm:mt-2">
+				<div className="flex max-w-lg items-center">
+				  {subscriptionExpiration
+					? format(subscriptionExpiration, 'yyyy-MM-dd HH:mm') // Display the formatted date
+					: (
+					  <span className="text-gray-400">No subscription</span> // Style for 'N/A'
+					)}
+				</div>
+			  </div>
+			</div>
+
               <div className="form-row">
                 <label className="text-label">
                   {intl.formatMessage(messages.role)}

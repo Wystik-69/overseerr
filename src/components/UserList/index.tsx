@@ -547,6 +547,8 @@ const UserList = () => {
             <Table.TH>{intl.formatMessage(messages.accounttype)}</Table.TH>
             <Table.TH>{intl.formatMessage(messages.role)}</Table.TH>
             <Table.TH>{intl.formatMessage(messages.created)}</Table.TH>
+            <Table.TH>Subscription Status</Table.TH>
+            <Table.TH>Expiration Date</Table.TH>
             <Table.TH className="text-right">
               {(data.results ?? []).length > 1 && (
                 <Button
@@ -645,6 +647,26 @@ const UserList = () => {
                   day: 'numeric',
                 })}
               </Table.TD>
+              <Table.TD>
+                {user.subscriptionStatus === 'Expired' ? (
+                  <Badge badgeType="danger">Expired</Badge>
+                ) : user.subscriptionStatus === 'Lifetime' ? (
+                  <Badge badgeType="warning">Lifetime</Badge>
+                ) : user.subscriptionStatus ? (
+                  <Badge badgeType="warning">{user.subscriptionStatus}</Badge>
+                ) : (
+                  <Badge badgeType="primary">Never</Badge>
+                )}
+              </Table.TD>
+              <Table.TD>
+                {user.subscriptionExpiration
+                  ? intl.formatDate(user.subscriptionExpiration, {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })
+                  : '-'}
+              </Table.TD>
               <Table.TD alignText="right">
                 <Button
                   buttonType="warning"
@@ -674,7 +696,7 @@ const UserList = () => {
             </tr>
           ))}
           <tr className="bg-gray-700">
-            <Table.TD colSpan={8} noPadding>
+            <Table.TD colSpan={10} noPadding>
               <nav
                 className="flex w-screen flex-col items-center space-x-4 space-y-3 px-6 py-3 sm:flex-row sm:space-y-0 lg:w-full"
                 aria-label="Pagination"

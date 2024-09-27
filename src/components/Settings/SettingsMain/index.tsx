@@ -55,6 +55,8 @@ const messages = defineMessages({
   validationApplicationUrlTrailingSlash: 'URL must not end in a trailing slash',
   partialRequestsEnabled: 'Allow Partial Series Requests',
   locale: 'Display Language',
+  plexStopSubscriptionReason: 'Plex Stop Subscription Reason',
+  validationPlexStopSubscriptionReason: 'Provide a reason for stopping plex session when user trying to play a movie or tv show while his subscription is expired',
 });
 
 const SettingsMain = () => {
@@ -134,6 +136,7 @@ const SettingsMain = () => {
             partialRequestsEnabled: data?.partialRequestsEnabled,
             trustProxy: data?.trustProxy,
             cacheImages: data?.cacheImages,
+			plexStopSubscriptionReason: data?.plexStopSubscriptionReason,
           }}
           enableReinitialize
           validationSchema={MainSettingsSchema}
@@ -150,6 +153,7 @@ const SettingsMain = () => {
                 partialRequestsEnabled: values.partialRequestsEnabled,
                 trustProxy: values.trustProxy,
                 cacheImages: values.cacheImages,
+				plexStopSubscriptionReason: values.plexStopSubscriptionReason,
               });
               mutate('/api/v1/settings/public');
               mutate('/api/v1/status');
@@ -425,6 +429,25 @@ const SettingsMain = () => {
                         );
                       }}
                     />
+                  </div>
+                </div>
+                <div className="form-row">
+                  <label htmlFor="plexStopSubscriptionReason" className="text-label">
+                    {intl.formatMessage(messages.plexStopSubscriptionReason )}
+                  </label>
+                  <div className="form-input-area">
+                    <div className="form-input-field">
+                      <Field
+                        id="plexStopSubscriptionReason"
+                        name="plexStopSubscriptionReason"
+                        type="text"
+                      />
+                    </div>
+                    {errors.plexStopSubscriptionReason  &&
+                      touched.plexStopSubscriptionReason  &&
+                      typeof errors.plexStopSubscriptionReason  === 'string' && (
+                        <div className="error">{errors.plexStopSubscriptionReason }</div>
+                      )}
                   </div>
                 </div>
                 <div className="actions">

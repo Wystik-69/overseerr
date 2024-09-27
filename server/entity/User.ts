@@ -103,6 +103,12 @@ export class User {
   @Column({ nullable: true })
   public tvQuotaDays?: number;
 
+  @Column({ type: 'varchar', nullable: true })
+  public subscriptionStatus: string;
+
+  @Column({ type: 'datetime', nullable: true })
+  public subscriptionExpiration: string;
+
   @OneToOne(() => UserSettings, (settings) => settings.user, {
     cascade: true,
     eager: true,

@@ -104,6 +104,7 @@ export interface MainSettings {
   trustProxy: boolean;
   partialRequestsEnabled: boolean;
   locale: string;
+  plexStopSubscriptionReason: string;
 }
 
 interface PublicSettings {
@@ -254,8 +255,11 @@ export type JobId =
   | 'download-sync'
   | 'download-sync-reset'
   | 'image-cache-cleanup'
-  | 'availability-sync';
-
+  | 'availability-sync'
+  | 'check-expired-subscriptions'
+  | 'plex-subscriptions-status'
+  | 'plex-account-sharing';
+  
 interface AllSettings {
   clientId: string;
   vapidPublic: string;
@@ -301,6 +305,7 @@ class Settings {
         trustProxy: false,
         partialRequestsEnabled: true,
         locale: 'en',
+		plexStopSubscriptionReason: 'Your subscription has expired',
       },
       plex: {
         name: '',
@@ -431,6 +436,15 @@ class Settings {
         'image-cache-cleanup': {
           schedule: '0 0 5 * * *',
         },
+		'check-expired-subscriptions': {
+          schedule: '0 * * * * *',
+		},
+		'plex-subscriptions-status': {
+          schedule: '0 * * * * *',
+		},
+		'plex-account-sharing': {
+          schedule: '0 * * * * *',
+		},
       },
     };
     if (initialSettings) {
@@ -448,6 +462,15 @@ class Settings {
 
   set main(data: MainSettings) {
     this.data.main = data;
+  }
+
+  get plexStopSubscriptionReason(): string {
+    return this.data.main.plexStopSubscriptionReason;
+  }
+
+  set plexStopSubscriptionReason(value: string) {
+    this.data.main.plexStopSubscriptionReason = value;
+    this.save();
   }
 
   get plex(): PlexSettings {

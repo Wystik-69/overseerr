@@ -31,6 +31,17 @@ const isOwnProfileOrAdmin = (): Middleware => {
 
 const userSettingsRoutes = Router({ mergeParams: true });
 
+// Modified to subtract 2 hours for French timezone
+function formatDateToISOWithoutSeconds(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
 userSettingsRoutes.get<{ id: string }, UserSettingsGeneralResponse>(
   '/main',
   isOwnProfileOrAdmin(),
@@ -48,7 +59,12 @@ userSettingsRoutes.get<{ id: string }, UserSettingsGeneralResponse>(
       if (!user) {
         return next({ status: 404, message: 'User not found.' });
       }
-
+	  
+      // Ensure the subscriptionExpiration is formatted properly before sending the response
+      const formattedExpiration = user.subscriptionExpiration
+        ? formatDateToISOWithoutSeconds(new Date(user.subscriptionExpiration))
+        : null;
+		
       return res.status(200).json({
         username: user.username,
         discordId: user.settings?.discordId,
@@ -65,6 +81,8 @@ userSettingsRoutes.get<{ id: string }, UserSettingsGeneralResponse>(
         globalTvQuotaLimit: defaultQuotas.tv.quotaLimit,
         watchlistSyncMovies: user.settings?.watchlistSyncMovies,
         watchlistSyncTv: user.settings?.watchlistSyncTv,
+        subscriptionStatus: user.subscriptionStatus, // Added field
+        subscriptionExpiration: user.subscriptionExpiration, // Added field
       });
     } catch (e) {
       next({ status: 500, message: e.message });
@@ -109,6 +127,47 @@ userSettingsRoutes.post<
       user.tvQuotaLimit = req.body.tvQuotaLimit;
     }
 
+    // Handle subscription updates
+    if (req.body.subscriptionStatus) {
+      if (user.subscriptionStatus === 'Active' && req.body.subscriptionStatus !== 'Active') {
+        return next({
+          status: 400,
+          message: 'Cannot deactivate an active subscription directly.',
+        });
+      }
+
+      user.subscriptionStatus = req.body.subscriptionStatus;
+    }
+
+
+      // Update subscription status
+      if (req.body.subscriptionStatus) {
+        if (user.subscriptionStatus === 'Active' && req.body.subscriptionStatus !== 'Active') {
+          return next({
+            status: 400,
+            message: 'Cannot deactivate an active subscription directly.',
+          });
+        }
+        user.subscriptionStatus = req.body.subscriptionStatus;
+      }
+
+      // Handle subscription expiration update
+      if (req.body.subscriptionExpiration) {
+        // Validate the format of subscriptionExpiration
+        const newExpirationDate = new Date(req.body.subscriptionExpiration);
+
+        if (isNaN(newExpirationDate.getTime())) {
+          return next({
+            status: 400,
+            message: 'Invalid date format for subscription expiration.',
+          });
+        }
+
+        // Format the subscriptionExpiration to 'yyyy-MM-ddTHH:mm'
+        user.subscriptionExpiration = formatDateToISOWithoutSeconds(newExpirationDate);
+      }
+
+
     if (!user.settings) {
       user.settings = new UserSettings({
         user: req.user,
@@ -138,6 +197,8 @@ userSettingsRoutes.post<
       originalLanguage: user.settings.originalLanguage,
       watchlistSyncMovies: user.settings.watchlistSyncMovies,
       watchlistSyncTv: user.settings.watchlistSyncTv,
+      subscriptionStatus: user.subscriptionStatus, // Added field
+      subscriptionExpiration: user.subscriptionExpiration, // Added field
     });
   } catch (e) {
     next({ status: 500, message: e.message });
