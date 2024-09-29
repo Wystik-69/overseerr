@@ -58,20 +58,21 @@ class PlexAccountSharingManager {
         const userSessions: Record<string, { sessionId: string, ipAddress: string }> = {}; // Store session IDs and IP addresses
 
         for (const session of activeSessions) {
-          const sessionUsername = session.User.title;
-          const sessionId = session.Session.id;
-          const sessionIp = session.Player.remotePublicAddress;  // Retrieve IP address from the session
+          const sessionUsername = session?.User?.title;
+          const sessionId = session?.Session?.id;
+          const sessionIp = session?.Player?.remotePublicAddress;  // Retrieve IP address from the session
 
-          if (!sessionUsername || !sessionIp) {
-            logger.warn('No username or IP address found for the session.');
+          if (!sessionUsername || !sessionIp || !sessionId) {
             continue;
           }
 
           // Check if the user already has a session running with a different IP
           if (userSessions[sessionUsername] && userSessions[sessionUsername].ipAddress !== sessionIp) {
+            // Log suspicious activity
+            logger.warn(`Suspicious activity detected for user ${sessionUsername}. IP mismatch: multiple sessions detected with different IPs.`);
 
             const reason = encodeURIComponent(
-              "Activité suspecte détectée. Vos sessions Plex ont étés arrêtées en raison d'une tentative de partage de compte."
+              "Activité suspecte détectée. Vos sessions Plex ont été arrêtées en raison d'une tentative de partage de compte."
             );
 
             // Terminate both sessions (the existing session and the current one)
@@ -90,10 +91,13 @@ class PlexAccountSharingManager {
             };
           }
         }
+
+        // Log the number of users with suspicious activity
+        logger.info(`Found ${sessionCount} session(s) with suspicious IP activity.`);
       }
     } catch (error) {
       // Log the error
-      logger.error('Error checking Plex account sharing:', error);
+      logger.error(`Error checking Plex account sharing: ${error.message}`);
     }
   }
 }
