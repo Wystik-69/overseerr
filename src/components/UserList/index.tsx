@@ -76,6 +76,12 @@ const messages = defineMessages({
   sortRequests: 'Request Count',
   localLoginDisabled:
     'The <strong>Enable Local Sign-In</strong> setting is currently disabled.',
+  subscriptionstatus: 'Subscription Status',
+  expirationdate: 'Expiration Date',
+  expired: 'Expired',
+  lifetime: 'Lifetime',
+  active: 'Active',
+  never: 'Never',
 });
 
 type Sort = 'created' | 'updated' | 'requests' | 'displayname';
@@ -547,8 +553,8 @@ const UserList = () => {
             <Table.TH>{intl.formatMessage(messages.accounttype)}</Table.TH>
             <Table.TH>{intl.formatMessage(messages.role)}</Table.TH>
             <Table.TH>{intl.formatMessage(messages.created)}</Table.TH>
-            <Table.TH>Subscription Status</Table.TH>
-            <Table.TH>Expiration Date</Table.TH>
+            <Table.TH>{intl.formatMessage(messages.subscriptionstatus)}</Table.TH>
+            <Table.TH>{intl.formatMessage(messages.expirationdate)}</Table.TH>
             <Table.TH className="text-right">
               {(data.results ?? []).length > 1 && (
                 <Button
@@ -649,13 +655,21 @@ const UserList = () => {
               </Table.TD>
               <Table.TD>
                 {user.subscriptionStatus === 'Expired' ? (
-                  <Badge badgeType="danger">Expired</Badge>
+                  <Badge badgeType="danger">
+                    {intl.formatMessage(messages.expired)}
+                  </Badge>
                 ) : user.subscriptionStatus === 'Lifetime' ? (
-                  <Badge badgeType="warning">Lifetime</Badge>
+                  <Badge badgeType="warning">
+                    {intl.formatMessage(messages.lifetime)}
+                  </Badge>
                 ) : user.subscriptionStatus ? (
-                  <Badge badgeType="warning">{user.subscriptionStatus}</Badge>
+                  <Badge badgeType="warning">
+                    {intl.formatMessage(messages.active)}
+                  </Badge>
                 ) : (
-                  <Badge badgeType="primary">Never</Badge>
+                  <Badge badgeType="primary">
+                    {intl.formatMessage(messages.never)}
+                  </Badge>
                 )}
               </Table.TD>
               <Table.TD>

@@ -58,6 +58,9 @@ const messages = defineMessages({
     'Automatically request series on your <PlexWatchlistSupportLink>Plex Watchlist</PlexWatchlistSupportLink>',
   subscriptionStatus: 'Subscription Status',
   subscriptionExpiration: 'Subscription Expiration',
+  activateSubscription: 'Activate Subscription',
+  subscriptionIsActive: 'Subscription is Active',
+  noSubscription: 'No subscription',
 });
 
 const UserGeneralSettings = () => {
@@ -210,54 +213,56 @@ const UserGeneralSettings = () => {
               </div>
               
 
-              {/* Subscription Activation */}
+			{/* Subscription Activation */}
 			{currentHasPermission(Permission.ADMIN) && (
-			  <div className="form-row">
-				<label className="text-label">{intl.formatMessage(messages.subscriptionStatus)}</label>
-				<div className="form-input-area">
-				  <div className="form-input-field">
-					<input
-					  type="checkbox"
-					  checked={isSubscriptionActive}
-					  onChange={() => {
-						if (!isSubscriptionActive) {
-						  // Activate subscription and add 1 year
-						  setIsSubscriptionActive(true);
-						  const newExpirationDate = new Date();
-						  newExpirationDate.setFullYear(newExpirationDate.getFullYear() + 1);
-						  setSubscriptionExpiration(newExpirationDate);
-						  setFieldValue('subscriptionExpiration', newExpirationDate);
-						} else {
-						  // Allow deactivation
-						  setIsSubscriptionActive(false);
-						  setSubscriptionExpiration(null);
-						  setFieldValue('subscriptionExpiration', null);
-						}
-					  }}
-					  disabled={values.subscriptionStatus === 'Active'} // Disable if already active
-					/>
-					<span className="ml-2 text-gray-300">
-					  {values.subscriptionStatus === 'Active'
-						? 'Subscription is Active'
-						: 'Activate Subscription'}
-					</span>
-				  </div>
+				<div className="form-row">
+					<label className="text-label">{intl.formatMessage(messages.subscriptionStatus)}</label>
+					<div className="form-input-area">
+						<div className="form-input-field">
+							<input
+								type="checkbox"
+								checked={isSubscriptionActive}
+								onChange={() => {
+									if (!isSubscriptionActive) {
+										// Activate subscription and add 1 year
+										setIsSubscriptionActive(true);
+										const newExpirationDate = new Date();
+										newExpirationDate.setFullYear(newExpirationDate.getFullYear() + 1);
+										setSubscriptionExpiration(newExpirationDate);
+										setFieldValue('subscriptionExpiration', newExpirationDate);
+									} else {
+										// Allow deactivation
+										setIsSubscriptionActive(false);
+										setSubscriptionExpiration(null);
+										setFieldValue('subscriptionExpiration', null);
+									}
+								}}
+								disabled={values.subscriptionStatus === 'Active'} // Disable if already active
+							/>
+							<span className="ml-2 text-gray-300">
+								{values.subscriptionStatus === 'Active'
+									? intl.formatMessage(messages.subscriptionIsActive)
+									: intl.formatMessage(messages.activateSubscription)}
+							</span>
+						</div>
+					</div>
 				</div>
-			  </div>
 			)}
 
 			{/* Subscription Expiration */}
 			<div className="form-row">
-			  <label className="text-label">{intl.formatMessage(messages.subscriptionExpiration)}</label>
-			  <div className="mb-1 text-sm font-medium leading-5 text-gray-400 sm:mt-2">
-				<div className="flex max-w-lg items-center">
-				  {subscriptionExpiration
-					? format(subscriptionExpiration, 'yyyy-MM-dd HH:mm') // Display the formatted date
-					: (
-					  <span className="text-gray-400">No subscription</span> // Style for 'N/A'
-					)}
+				<label className="text-label">{intl.formatMessage(messages.subscriptionExpiration)}</label>
+				<div className="mb-1 text-sm font-medium leading-5 text-gray-400 sm:mt-2">
+					<div className="flex max-w-lg items-center">
+						{subscriptionExpiration
+							? format(subscriptionExpiration, 'yyyy-MM-dd HH:mm') // Display the formatted date
+							: (
+								<span className="text-gray-400">
+									{intl.formatMessage(messages.noSubscription)} {/* Use translation */}
+								</span>
+							)}
+					</div>
 				</div>
-			  </div>
 			</div>
 
               <div className="form-row">
