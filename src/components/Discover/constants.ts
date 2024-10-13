@@ -74,6 +74,7 @@ export const sliderTitles = defineMessages({
   recentlyAdded: 'Recently Added',
   upcoming: 'Upcoming Movies',
   trending: 'Trending',
+  plexstreams: 'Plex Current Streams',
   plexwatchlist: 'Your Plex Watchlist',
   moviegenres: 'Movie Genres',
   tvgenres: 'Series Genres',

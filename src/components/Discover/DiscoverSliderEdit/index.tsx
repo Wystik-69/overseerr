@@ -130,6 +130,8 @@ const DiscoverSliderEdit = ({
         return intl.formatMessage(sliderTitles.recentlyAdded);
       case DiscoverSliderType.RECENT_REQUESTS:
         return intl.formatMessage(sliderTitles.recentrequests);
+      case DiscoverSliderType.PLEX_STREAMS:
+        return intl.formatMessage(sliderTitles.plexstreams);
       case DiscoverSliderType.PLEX_WATCHLIST:
         return intl.formatMessage(sliderTitles.plexwatchlist);
       case DiscoverSliderType.TRENDING:

@@ -20,6 +20,8 @@ tags:
     description: Endpoints related to user management.
   - name: search
     description: Endpoints related to search and discovery.
+  - name: plexstreams
+    description: Endpoints related to Plex streams fetch.
   - name: request
     description: Endpoints related to request management.
   - name: movies
@@ -4885,6 +4887,72 @@ paths:
                     name:
                       type: string
                       example: Genre Name
+  /plexstreams:
+    get:
+      summary: Get the current Plex streams
+      description: |
+        Fetches a list of currently active Plex streams, including the username, title of the movie or series (for TV shows), session ID, media type, playback state (e.g., playing, paused), current and total time of the media, the poster image, background image, release year, and the avatar URL of the user.
+      tags:
+        - Plex
+      responses:
+        '200':
+          description: Active Plex streams returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        username:
+                          type: string
+                          description: Username of the person streaming
+                          example: "JohnDoe"
+                        title:
+                          type: string
+                          description: |
+                            Title of the movie or the global series name for TV shows.
+                            For example, "Breaking Bad" for a TV series, or "Inception" for a movie.
+                          example: "Malcolm"
+                        sessionId:
+                          type: string
+                          description: Unique session identifier
+                          example: "abc123"
+                        mediaType:
+                          type: string
+                          description: The type of media (movie or episode)
+                          example: "movie"
+                        state:
+                          type: string
+                          description: The current playback state, e.g., playing, paused.
+                          example: "paused"
+                        currentTime:
+                          type: string
+                          description: The current playback position in the format HH:MM:SS.
+                          example: "0:13:27"
+                        totalTime:
+                          type: string
+                          description: The total duration of the media in the format HH:MM:SS.
+                          example: "1:46:44"
+                        posterUrl:
+                          type: string
+                          description: The URL of the media poster (movie poster or series poster for TV shows).
+                          example: "http://192.168.1.100:32400/library/metadata/12345/thumb?X-Plex-Token=abcd1234"
+                        backgroundUrl:
+                          type: string
+                          description: The URL of the media's background image (art for TV shows or movies).
+                          example: "http://192.168.1.100:32400/library/metadata/12345/art?X-Plex-Token=abcd1234"
+                        year:
+                          type: string
+                          description: The release year of the movie or TV show.
+                          example: "2011"
+                        avatarUrl:
+                          type: string
+                          description: The URL of the user's avatar.
+                          example: "https://plex.tv/users/abc123/avatar?X-Plex-Token=abcd1234"
   /discover/watchlist:
     get:
       summary: Get the Plex watchlist.
