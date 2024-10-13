@@ -8,7 +8,7 @@ import { isAuthenticated } from '@server/middleware/auth';
 import axios from 'axios';  // Using axios instead of node-fetch
 
 interface PlexSession {
-  User?: { title: string };
+  User?: { username?: string; title: string };  // Added username field
   title: string;
   grandparentTitle?: string;
   thumb?: string;
@@ -118,7 +118,10 @@ plexStreamsRoutes.get(
               backgroundUrl = session.art ? `/api/v1/plexstreams/imageproxy?url=${encodeURIComponent(`http://${settings.ip}:${settings.port}${session.art}?X-Plex-Token=${plexToken}`)}` : backgroundUrl;
             }
 
-            const user = await userRepository.findOne({ where: { plexUsername: session.User?.title } });
+            // Attempt to retrieve the real username, fallback to display name if not available
+            const sessionUsername = session.User?.username || session.User?.title;
+
+            const user = await userRepository.findOne({ where: { plexUsername: sessionUsername } });
             const avatarUrl = user ? user.avatar : null;
 
             const title = session.type === 'episode'
@@ -128,7 +131,7 @@ plexStreamsRoutes.get(
             const releaseYear = session.year || 'Unknown Year';
 
             return {
-              username: session.User?.title || 'Unknown',
+              username: sessionUsername || 'Unknown',
               title,
               sessionId: session.Session?.id,
               mediaType: session.type,

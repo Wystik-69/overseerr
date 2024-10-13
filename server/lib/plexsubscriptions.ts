@@ -57,7 +57,8 @@ class PlexSubscriptionManager {
         let sessionCount = 0;
 
         for (const session of activeSessions) {
-          const sessionUsername = session.User.title;
+          // Attempt to retrieve the real username, fallback to display name if not available
+          const sessionUsername = session.User?.username || session.User?.title;
           const sessionId = session.Session.id;
 
           if (!sessionUsername) {

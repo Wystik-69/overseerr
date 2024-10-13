@@ -104,17 +104,16 @@ const PlexStreamsCard = ({ session }: PlexStreamsCardProps) => {
           </span>
         </div>
       </div>
-
-      <div className="flex-shrink-0 w-28">
+      <div className="w-20 flex-shrink-0 scale-100 transform-gpu cursor-pointer overflow-hidden rounded-md shadow-sm transition duration-300 hover:scale-105 hover:shadow-md sm:w-28">
         <div className="block overflow-hidden rounded-md shadow-sm transition duration-300 hover:scale-105 hover:shadow-md">
-          {/* Using CachedImage to fetch poster image from the proxy URL */}
-          <CachedImage
-            src={session.posterUrl}  // This will be the proxied URL from the API
-            alt="Poster"
-            layout="responsive"
-            width={600}
-            height={900}
-          />
+            <CachedImage
+              src={session.posterUrl}  // This will be the proxied URL from the API
+              alt="Poster"
+              layout="responsive"
+              width={600}
+              height={900}
+              style={{ position: 'absolute', inset: '0px', boxSizing: 'border-box', padding: '0px', border: 'none', margin: 'auto', display: 'block', width: '0px', height: '0px', minWidth: '100%', maxWidth: '100%', minHeight: '100%', maxHeight: '100%' }}
+            />
         </div>
       </div>
     </div>
