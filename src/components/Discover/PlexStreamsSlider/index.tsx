@@ -22,11 +22,6 @@ const PlexStreamsSlider = () => {
     { revalidateOnMount: true }
   );
 
-  // Check if the user has the required permissions
-  if (!hasPermission([Permission.MANAGE_REQUESTS, Permission.RECENT_VIEW], { type: 'or' })) {
-    return null;
-  }
-
   return (
     <>
       <div className="slider-header">
