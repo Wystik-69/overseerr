@@ -45,7 +45,13 @@ plexStreamsRoutes.get('/imageproxy', isAuthenticated(), async (req: Request, res
 
     // Fetching image using axios
     const response = await axios.get(encodedUrl, { responseType: 'arraybuffer' });
-    res.set('Content-Type', response.headers['content-type'] || 'image/jpeg');
+
+    // Set caching headers
+    res.setHeader('Content-Type', response.headers['content-type'] || 'image/jpeg');
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');  // Cache for 1 year
+    res.setHeader('Expires', new Date(Date.now() + 31536000000).toUTCString());  // Set expiration to 1 year
+
+    // Send the image data
     res.send(response.data);
   } catch (error) {
     logger.error('Error fetching image from Plex:', error);
