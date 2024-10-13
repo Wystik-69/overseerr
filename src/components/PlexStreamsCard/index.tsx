@@ -105,7 +105,7 @@ const PlexStreamsCard = ({ session }: PlexStreamsCardProps) => {
         </div>
       </div>
       <div className="w-20 flex-shrink-0 scale-100 transform-gpu cursor-pointer overflow-hidden rounded-md shadow-sm transition duration-300 hover:scale-105 hover:shadow-md sm:w-28">
-        <div className="block overflow-hidden rounded-md shadow-sm transition duration-300 hover:scale-105 hover:shadow-md">
+        <div>
             <CachedImage
               src={session.posterUrl}  // This will be the proxied URL from the API
               alt="Poster"
