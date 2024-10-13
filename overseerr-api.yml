@@ -4953,6 +4953,35 @@ paths:
                           type: string
                           description: The URL of the user's avatar.
                           example: "https://plex.tv/users/abc123/avatar?X-Plex-Token=abcd1234"
+  /plexstreams/imageproxy:
+    get:
+      summary: Proxy image request to Plex
+      description: |
+        Proxies an image request to the Plex server. This endpoint allows fetching of media-related images such as posters or backgrounds through the Overseerr API by providing a `url` query parameter with the full Plex image URL.
+      tags:
+        - Plex
+      parameters:
+        - in: query
+          name: url
+          schema:
+            type: string
+          required: true
+          description: |
+            The full URL of the image on the Plex server (e.g., poster or background image).
+            This URL must include the necessary Plex token (`X-Plex-Token`) for authentication.
+          example: "http://192.168.0.50:32400/library/metadata/9625/thumb/1728141402?X-Plex-Token=Fyfhjkv8S5qZtT7ghAHk"
+      responses:
+        '200':
+          description: The image fetched from Plex
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad request (missing or invalid URL)
+        '500':
+          description: Internal server error (unable to fetch image)
   /discover/watchlist:
     get:
       summary: Get the Plex watchlist.

@@ -59,9 +59,10 @@ const PlexStreamsCard = ({ session }: PlexStreamsCardProps) => {
   return (
     <div className="relative flex w-72 sm:w-96 overflow-hidden rounded-xl bg-gray-800 p-4 text-gray-400 shadow ring-1 ring-gray-700">
       <div className="absolute inset-0 z-0">
+        {/* Using CachedImage to fetch background image from the proxy URL */}
         <CachedImage
           alt={`${session.title} Background`}
-          src={session.backgroundUrl}
+          src={session.backgroundUrl}  // This will be the proxied URL from the API
           layout="fill"
           objectFit="cover"
         />
@@ -106,8 +107,9 @@ const PlexStreamsCard = ({ session }: PlexStreamsCardProps) => {
 
       <div className="flex-shrink-0 w-28">
         <div className="block overflow-hidden rounded-md shadow-sm transition duration-300 hover:scale-105 hover:shadow-md">
+          {/* Using CachedImage to fetch poster image from the proxy URL */}
           <CachedImage
-            src={session.posterUrl}
+            src={session.posterUrl}  // This will be the proxied URL from the API
             alt="Poster"
             layout="responsive"
             width={600}

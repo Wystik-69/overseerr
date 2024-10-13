@@ -5,6 +5,7 @@ import { User } from '@server/entity/User';
 import logger from '@server/logger';
 import { getSettings } from '@server/lib/settings';
 import { isAuthenticated } from '@server/middleware/auth';
+import axios from 'axios';  // Using axios instead of node-fetch
 
 interface PlexSession {
   User?: { title: string };
@@ -30,6 +31,27 @@ const formatTime = (milliseconds: number): string => {
 };
 
 const plexStreamsRoutes = Router();
+
+// Proxy route to serve images from Plex through the server using Axios
+plexStreamsRoutes.get('/imageproxy', isAuthenticated(), async (req: Request, res: Response) => {
+  const { url } = req.query;
+  if (!url) {
+    return res.status(400).json({ error: 'Image URL is required' });
+  }
+
+  try {
+    // URL-encode the incoming `url` parameter to prevent errors
+    const encodedUrl = encodeURI(url as string);
+
+    // Fetching image using axios
+    const response = await axios.get(encodedUrl, { responseType: 'arraybuffer' });
+    res.set('Content-Type', response.headers['content-type'] || 'image/jpeg');
+    res.send(response.data);
+  } catch (error) {
+    logger.error('Error fetching image from Plex:', error);
+    return res.status(500).json({ error: 'Failed to fetch image' });
+  }
+});
 
 plexStreamsRoutes.get(
   '/',
@@ -82,12 +104,12 @@ plexStreamsRoutes.get(
             let backgroundUrl = 'Unknown Background';
 
             if (session.type === 'movie') {
-              posterUrl = session.thumb ? `http://${settings.ip}:${settings.port}${session.thumb}?X-Plex-Token=${plexToken}` : posterUrl;
-              backgroundUrl = session.art ? `http://${settings.ip}:${settings.port}${session.art}?X-Plex-Token=${plexToken}` : backgroundUrl;
+              posterUrl = session.thumb ? `/api/v1/plexstreams/imageproxy?url=${encodeURIComponent(`http://${settings.ip}:${settings.port}${session.thumb}?X-Plex-Token=${plexToken}`)}` : posterUrl;
+              backgroundUrl = session.art ? `/api/v1/plexstreams/imageproxy?url=${encodeURIComponent(`http://${settings.ip}:${settings.port}${session.art}?X-Plex-Token=${plexToken}`)}` : backgroundUrl;
             } else if (session.type === 'episode') {
               // Use the `grandparentThumb` for the series poster
-              posterUrl = session.grandparentThumb ? `http://${settings.ip}:${settings.port}${session.grandparentThumb}?X-Plex-Token=${plexToken}` : posterUrl;
-              backgroundUrl = session.art ? `http://${settings.ip}:${settings.port}${session.art}?X-Plex-Token=${plexToken}` : backgroundUrl;
+              posterUrl = session.grandparentThumb ? `/api/v1/plexstreams/imageproxy?url=${encodeURIComponent(`http://${settings.ip}:${settings.port}${session.grandparentThumb}?X-Plex-Token=${plexToken}`)}` : posterUrl;
+              backgroundUrl = session.art ? `/api/v1/plexstreams/imageproxy?url=${encodeURIComponent(`http://${settings.ip}:${settings.port}${session.art}?X-Plex-Token=${plexToken}`)}` : backgroundUrl;
             }
 
             const user = await userRepository.findOne({ where: { plexUsername: session.User?.title } });
