@@ -20,12 +20,17 @@ interface PlexStreamsCardProps {
 
 const PlexStreamsCard = ({ session }: PlexStreamsCardProps) => {
   const intl = useIntl();
-  const [dynamicCurrentTime, setDynamicCurrentTime] = useState(session.currentTime);
-  const [isPlaying, setIsPlaying] = useState(session.state.toLowerCase() === 'playing');
+  const [dynamicCurrentTime, setDynamicCurrentTime] = useState(
+    session.currentTime
+  );
+  const [isPlaying, setIsPlaying] = useState(
+    session.state.toLowerCase() === 'playing'
+  );
 
   const timeToSeconds = (time: string) => {
     const parts = time.split(':');
-    const [hours, minutes, seconds] = parts.length === 3 ? parts.map(Number) : [0, ...parts.map(Number)];
+    const [hours, minutes, seconds] =
+      parts.length === 3 ? parts.map(Number) : [0, ...parts.map(Number)];
     return hours * 3600 + minutes * 60 + seconds;
   };
 
@@ -33,7 +38,9 @@ const PlexStreamsCard = ({ session }: PlexStreamsCardProps) => {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
-    return `${hours > 0 ? `${hours}:` : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    return `${
+      hours > 0 ? `${hours}:` : ''
+    }${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
   };
 
   useEffect(() => {
@@ -52,23 +59,27 @@ const PlexStreamsCard = ({ session }: PlexStreamsCardProps) => {
     setIsPlaying(session.state.toLowerCase() === 'playing');
   }, [session.state]);
 
-  const capitalizeFirstLetter = (state: string) => {
-    return state.charAt(0).toUpperCase() + state.slice(1);
-  };
+  const playingClass =
+    'mt-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full whitespace-nowrap transition !no-underline bg-green-500 bg-opacity-80 border border-green-500 !text-green-100 hover:bg-green-500 hover:bg-opacity-100 overflow-hidden';
+
+  const pausedClass =
+    'mt-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full whitespace-nowrap transition !no-underline bg-indigo-500 bg-opacity-80 border border-indigo-500 !text-indigo-100 hover:bg-indigo-500 hover:bg-opacity-100 overflow-hidden';
 
   return (
-    <div className="relative flex w-72 sm:w-96 overflow-hidden rounded-xl bg-gray-800 p-4 text-gray-400 shadow ring-1 ring-gray-700">
+    <div className="relative flex w-72 overflow-hidden rounded-xl bg-gray-800 p-4 text-gray-400 shadow ring-1 ring-gray-700 sm:w-96">
       <div className="absolute inset-0 z-0">
-        {/* Using CachedImage to fetch background image from the proxy URL */}
         <CachedImage
           alt={`${session.title} Background`}
-          src={session.backgroundUrl}  // This will be the proxied URL from the API
+          src={session.backgroundUrl} 
           layout="fill"
           objectFit="cover"
         />
         <div
           className="absolute inset-0"
-          style={{ backgroundImage: 'linear-gradient(135deg, rgba(17, 24, 39, 0.47) 0%, rgba(17, 24, 39, 1) 75%)' }}
+          style={{
+            backgroundImage:
+              'linear-gradient(135deg, rgba(17, 24, 39, 0.47) 0%, rgba(17, 24, 39, 1) 75%)',
+          }}
         />
       </div>
 
@@ -81,7 +92,7 @@ const PlexStreamsCard = ({ session }: PlexStreamsCardProps) => {
           {session.title}
         </div>
 
-        <div className="flex items-center mt-2">
+        <div className="mt-2 flex items-center">
           {session.avatarUrl && (
             <img
               src={session.avatarUrl}
@@ -93,28 +104,56 @@ const PlexStreamsCard = ({ session }: PlexStreamsCardProps) => {
             {session.username}
           </div>
         </div>
-
-        <div className="mt-2 flex items-center text-sm sm:mt-1">
-          <span className="mr-2 font-bold">
-            {intl.formatMessage({
-              id: session.state.toLowerCase() === 'playing' 
-                ? 'components.PlexStreamsCard.statePlaying' 
-                : 'components.PlexStreamsCard.statePaused',
-            })} - {dynamicCurrentTime !== 'NaN:NaN' ? dynamicCurrentTime : session.currentTime} / {session.totalTime}
-          </span>
+        <div className="mt-2 text-sm sm:mt-1">
+          <div className="flex items-center">
+            <span
+              className={
+                session.state.toLowerCase() === 'playing'
+                  ? playingClass
+                  : pausedClass
+              }
+            >
+              {intl.formatMessage({
+                id:
+                  session.state.toLowerCase() === 'playing'
+                    ? 'components.PlexStreamsCard.statePlaying'
+                    : 'components.PlexStreamsCard.statePaused',
+              })}
+            </span>
+          </div>
+          <div className="mt-1 flex items-center">
+            <span className="mr-2 font-bold">
+              {dynamicCurrentTime !== 'NaN:NaN'
+                ? dynamicCurrentTime
+                : session.currentTime}{' '}
+              / {session.totalTime}
+            </span>
+          </div>
         </div>
       </div>
-      <div className="w-20 flex-shrink-0 scale-100 transform-gpu cursor-pointer overflow-hidden rounded-md shadow-sm transition duration-300 hover:scale-105 hover:shadow-md sm:w-28">
-        <div>
-            <CachedImage
-              src={session.posterUrl}  // This will be the proxied URL from the API
-              alt="Poster"
-              layout="responsive"
-              width={600}
-              height={900}
-              style={{ position: 'absolute', inset: '0px', boxSizing: 'border-box', padding: '0px', border: 'none', margin: 'auto', display: 'block', width: '0px', height: '0px', minWidth: '100%', maxWidth: '100%', minHeight: '100%', maxHeight: '100%' }}
-            />
-        </div>
+      <div className="transform-gpu scale-100 w-20 flex-shrink-0 cursor-pointer overflow-hidden rounded-md shadow-sm transition duration-300 hover:scale-105 hover:shadow-md sm:w-28">
+        <CachedImage
+          src={session.posterUrl}
+          alt="Poster"
+          layout="responsive"
+          width={600}
+          height={900}
+          style={{
+            position: 'absolute',
+            inset: '0px',
+            boxSizing: 'border-box',
+            padding: '0px',
+            border: 'none',
+            margin: 'auto',
+            display: 'block',
+            width: '0px',
+            height: '0px',
+            minWidth: '100%',
+            maxWidth: '100%',
+            minHeight: '100%',
+            maxHeight: '100%',
+          }}
+        />
       </div>
     </div>
   );

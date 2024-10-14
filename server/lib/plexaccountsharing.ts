@@ -3,6 +3,8 @@ import PlexAPI from 'plex-api';
 import { User } from '@server/entity/User';
 import logger from '@server/logger';
 import { getSettings } from '@server/lib/settings';
+import axios from 'axios';
+import xml2js from 'xml2js';
 
 class PlexAccountSharingManager {
   /**
@@ -36,7 +38,7 @@ class PlexAccountSharingManager {
         token: plexToken,
         https: settings.useSsl,
         authenticator: {
-          authenticate: (plexApi, cb) => {
+          authenticate: (plexApi: any, cb: any) => {
             cb(undefined, plexToken);
           },
         },
@@ -48,19 +50,61 @@ class PlexAccountSharingManager {
         },
       });
 
-      // Fetch active Plex sessions
-      const sessions = await plexClient.query('/status/sessions');
+      // Fetch your own Plex account information
+      const accountResponse = await plexClient.query('/myplex/account');
+      const ownDisplayName = accountResponse.MediaContainer?.title || 'Unknown';
+      const ownUsername = accountResponse.MediaContainer?.username || 'Unknown';
+
+      // Fetch Plex account users (friends or shared users)
+      const usersResponse = await axios.get('https://plex.tv/api/users', {
+        headers: {
+          'X-Plex-Token': plexToken,
+        },
+      });
+
+      // Parse the XML response
+      const parser = new xml2js.Parser();
+      const usersResult = await parser.parseStringPromise(usersResponse.data);
+
+      // Map display names to usernames
+      const usersArray = usersResult.MediaContainer.User || [];
+      const displayNameToUsernameMap: { [key: string]: string } = {};
+
+      usersArray.forEach((user: any) => {
+        const username = user.$.username;
+        const displayName = user.$.title;
+        displayNameToUsernameMap[displayName] = username;
+      });
+
+      // Include 'includeUser=1' to get more user details
+      const sessions = await plexClient.query('/status/sessions?includeUser=1');
 
       if (sessions && sessions.MediaContainer && sessions.MediaContainer.Metadata) {
         const activeSessions = sessions.MediaContainer.Metadata;
 
         let sessionCount = 0;
-        const userSessions: Record<string, { sessionId: string, ipAddress: string }> = {}; // Store session IDs and IP addresses
+        const userSessions: Record<string, { sessionId: string; ipAddress: string }> = {}; // Store session IDs and IP addresses
 
         for (const session of activeSessions) {
-          const sessionUsername = session?.User?.title;
+          let sessionUsername = 'Unknown User';
+          let displayName = '';
+
+          if (session.User && session.User.title) {
+            displayName = session.User.title;
+
+            if (displayName === ownDisplayName) {
+              sessionUsername = ownUsername;
+            } else if (displayNameToUsernameMap[displayName]) {
+              sessionUsername = displayNameToUsernameMap[displayName];
+            } else {
+              sessionUsername = displayName; // Fallback to display name
+            }
+          } else if (session.usernames && session.usernames[0]) {
+            sessionUsername = session.usernames[0];
+          }
+
           const sessionId = session?.Session?.id;
-          const sessionIp = session?.Player?.remotePublicAddress;  // Retrieve IP address from the session
+          const sessionIp = session?.Player?.remotePublicAddress; // Retrieve IP address from the session
 
           if (!sessionUsername || !sessionIp || !sessionId) {
             continue;
@@ -69,10 +113,12 @@ class PlexAccountSharingManager {
           // Check if the user already has a session running with a different IP
           if (userSessions[sessionUsername] && userSessions[sessionUsername].ipAddress !== sessionIp) {
             // Log suspicious activity
-            logger.warn(`Suspicious activity detected for user ${sessionUsername}. IP mismatch: multiple sessions detected with different IPs.`);
+            logger.warn(
+              `Suspicious activity detected for user ${sessionUsername}. IP mismatch: multiple sessions detected with different IPs.`
+            );
 
             const reason = encodeURIComponent(
-              "Activité suspecte détectée. Vos sessions Plex ont été arrêtées en raison d'une tentative de partage de compte."
+              'Activité suspecte détectée. Vos sessions Plex ont été arrêtées en raison d\'une tentative de partage de compte.'
             );
 
             // Terminate both sessions (the existing session and the current one)
@@ -80,7 +126,9 @@ class PlexAccountSharingManager {
             await plexClient.query(`/status/sessions/terminate?sessionId=${originalSessionId}&reason=${reason}`);
             await plexClient.query(`/status/sessions/terminate?sessionId=${sessionId}&reason=${reason}`);
 
-            logger.warn(`Stopped both sessions for user ${sessionUsername} due to suspicious activity (IP mismatch).`);
+            logger.warn(
+              `Stopped both sessions for user ${sessionUsername} due to suspicious activity (IP mismatch).`
+            );
 
             sessionCount++;
           } else {
