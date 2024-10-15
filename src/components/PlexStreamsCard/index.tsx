@@ -18,6 +18,16 @@ interface PlexStreamsCardProps {
   };
 }
 
+const PlexStreamsCardPlaceholder = () => {
+  return (
+    <div className="relative w-72 animate-pulse rounded-xl bg-gray-700 p-4 sm:w-96">
+      <div className="w-20 sm:w-28">
+        <div className="w-full" style={{ paddingBottom: '150%' }} />
+      </div>
+    </div>
+  );
+};
+
 const PlexStreamsCard = ({ session }: PlexStreamsCardProps) => {
   const intl = useIntl();
   const [dynamicCurrentTime, setDynamicCurrentTime] = useState(
@@ -64,6 +74,10 @@ const PlexStreamsCard = ({ session }: PlexStreamsCardProps) => {
 
   const pausedClass =
     'mt-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full whitespace-nowrap transition !no-underline bg-indigo-500 bg-opacity-80 border border-indigo-500 !text-indigo-100 hover:bg-indigo-500 hover:bg-opacity-100 overflow-hidden';
+
+  if (!session) {
+    return <PlexStreamsCardPlaceholder />;
+  }
 
   return (
     <div className="relative flex w-72 overflow-hidden rounded-xl bg-gray-800 p-4 text-gray-400 shadow ring-1 ring-gray-700 sm:w-96">
@@ -138,25 +152,10 @@ const PlexStreamsCard = ({ session }: PlexStreamsCardProps) => {
           layout="responsive"
           width={600}
           height={900}
-          style={{
-            position: 'absolute',
-            inset: '0px',
-            boxSizing: 'border-box',
-            padding: '0px',
-            border: 'none',
-            margin: 'auto',
-            display: 'block',
-            width: '0px',
-            height: '0px',
-            minWidth: '100%',
-            maxWidth: '100%',
-            minHeight: '100%',
-            maxHeight: '100%',
-          }}
         />
       </div>
     </div>
   );
 };
-
+PlexStreamsCard.Placeholder = PlexStreamsCardPlaceholder;
 export default PlexStreamsCard;
