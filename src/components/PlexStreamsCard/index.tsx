@@ -131,7 +131,7 @@ const PlexStreamsCard = ({ session }: PlexStreamsCardProps) => {
           </div>
         </div>
       </div>
-      <div className="transform-gpu scale-100 w-20 flex-shrink-0 cursor-pointer overflow-hidden rounded-md shadow-sm transition duration-300 hover:scale-105 hover:shadow-md sm:w-28">
+      <div className="transform-gpu scale-100 w-20 flex-shrink-0 overflow-hidden rounded-md shadow-sm transition duration-300 hover:scale-105 hover:shadow-md sm:w-28">
         <CachedImage
           src={session.posterUrl}
           alt="Poster"
