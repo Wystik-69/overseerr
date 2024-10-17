@@ -157,14 +157,6 @@ plexStreamsRoutes.get('/', isAuthenticated(), async (req: Request, res: Response
             // Try accessing 'session.usernames[0]'
             sessionUsername = session.usernames[0];
           }
-
-          // Log the matched user
-          if (sessionUsername !== 'Unknown User') {
-            console.log(`Matched Real User: ${sessionUsername} (Email: ${userEmail})`);
-          } else {
-            console.log(`Session User: ${sessionUsername} not in account users`);
-          }
-
           // Build poster and background URLs
           let posterUrl = 'Unknown Poster';
           let backgroundUrl = 'Unknown Background';
