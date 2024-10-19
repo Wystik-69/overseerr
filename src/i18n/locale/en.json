@@ -3,7 +3,7 @@
   "components.TautulliTopUsersCard.hours": "{hours, number} hour(s)",
   "components.TautulliTopUsersCard.minutes": "{minutes, number} minute(s)",
   "components.TautulliTopUsersCard.plays": "{plays, number} play(s)",
-  "components.TautulliTopUsersCard.lastPlay": "Last play: {lastPlay}",
+  "components.TautulliTopUsersCard.lastPlay": "Last play: {lastPlayDate} at {lastPlayTime}",
   "components.TautulliTopUsersCard.lastMedia": "Last media: {media}",
   "components.PlexStreamsCard.statePlaying": "Playing",
   "components.PlexStreamsCard.statePaused": "Paused",

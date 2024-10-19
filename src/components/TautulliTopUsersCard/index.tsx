@@ -52,23 +52,20 @@ const formatDuration = (totalSeconds: number, intl: any) => {
   }
 };
 
-// Update formatDate to use dd/mm/yyyy format for French locales
-const formatDate = (dateString: string, locale: string) => {
+const formatDateAndTime = (dateString: string, locale: string) => {
   const date = new Date(dateString);
-  if (locale === 'fr') {
-    return date.toLocaleDateString('fr-FR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    });
-  }
-  return new Intl.DateTimeFormat(locale, {
+  const formattedDate = new Intl.DateTimeFormat(locale, {
+    day: '2-digit',
+    month: '2-digit',
     year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  }).format(date);
+
+  const formattedTime = new Intl.DateTimeFormat(locale, {
     hour: '2-digit',
     minute: '2-digit',
   }).format(date);
+
+  return { lastPlayDate: formattedDate, lastPlayTime: formattedTime };
 };
 
 const TautulliTopUsersCard = ({ session }: TautulliTopUsersCardProps) => {
@@ -82,6 +79,8 @@ const TautulliTopUsersCard = ({ session }: TautulliTopUsersCardProps) => {
   if (!session) {
     return <TautulliTopUsersCardPlaceholder />;
   }
+
+  const { lastPlayDate, lastPlayTime } = formatDateAndTime(session.last_play, intl.locale);
 
   return (
     <div className="relative flex w-72 overflow-hidden rounded-xl bg-gray-800 p-4 text-gray-400 shadow ring-1 ring-gray-700 sm:w-96">
@@ -141,14 +140,14 @@ const TautulliTopUsersCard = ({ session }: TautulliTopUsersCardProps) => {
           )} / {playDuration}
         </div>
 
-        <div className="hidden text-xs font-medium text-white sm:flex mt-2">
+        <div className="text-xs font-medium text-white sm:flex mt-2">
           {intl.formatMessage(
-            { id: 'components.TautulliTopUsersCard.lastPlay', defaultMessage: 'Last play: {lastPlay}' },
-            { lastPlay: formatDate(session.last_play, intl.locale) }
+            { id: 'components.TautulliTopUsersCard.lastPlay', defaultMessage: 'Last play: {lastPlayDate} at {lastPlayTime}' },
+            { lastPlayDate, lastPlayTime }
           )}
         </div>
 
-        <div className="hidden text-xs font-medium text-white overflow-hidden overflow-ellipsis whitespace-nowrap mt-2">
+        <div className="text-xs font-medium text-white overflow-hidden overflow-ellipsis whitespace-nowrap mt-2">
           {intl.formatMessage(
             { id: 'components.TautulliTopUsersCard.lastMedia', defaultMessage: 'Last media: {media}' },
             { media: session.last_media.title }
