@@ -35,11 +35,20 @@ function formatUnixTimestamp(timestamp: number): string {
   return new Date(timestamp * 1000).toLocaleString();
 }
 
-function buildImageProxyUrl(path: string, ratingKey: string): string {
-  const encodedPath = encodeURIComponent(path);
+function buildTautulliImageUrl(path: string, ratingKey: string): string {
+  const decodedPath = decodeURIComponent(path);
+  const encodedPath = encodeURIComponent(decodedPath);
   const settings = getSettings();
   const tautulliConfig = settings.tautulli;
+
   return `http://${tautulliConfig.hostname}:${tautulliConfig.port}/pms_image_proxy?img=${encodedPath}&rating_key=${ratingKey}`;
+}
+
+
+function buildImageProxyUrl(path: string, ratingKey: string): string {
+  return `/api/v1/tautulli/imageproxy?url=${encodeURIComponent(
+    buildTautulliImageUrl(path, ratingKey)
+  )}`;
 }
 
 const router = Router();
@@ -77,7 +86,7 @@ router.get('/top-users', isAuthenticated(), async (req: Request, res: Response) 
       response.data.response.data.stat_id === 'top_users' &&
       Array.isArray(response.data.response.data.rows)
     ) {
-      const userRepository = getRepository(User); 
+      const userRepository = getRepository(User);
       const users = response.data.response.data.rows;
 
       const filteredUsers: TautulliTopUser[] = await Promise.all(
@@ -97,7 +106,9 @@ router.get('/top-users', isAuthenticated(), async (req: Request, res: Response) 
             total_duration: convertSecondsToHoursMinutes(user.total_duration),
             last_play: formatUnixTimestamp(user.last_play),
             thumb: user.thumb ? buildImageProxyUrl(user.thumb, user.rating_key) : null,
-            grandparent_thumb: user.grandparent_thumb ? buildImageProxyUrl(user.grandparent_thumb, user.rating_key) : null,
+            grandparent_thumb: user.grandparent_thumb
+              ? buildImageProxyUrl(user.grandparent_thumb, user.rating_key)
+              : null,
             art: user.art ? buildImageProxyUrl(user.art, user.rating_key) : null,
             last_media: {
               title: user.title,
@@ -139,8 +150,9 @@ router.get('/imageproxy', isAuthenticated(), async (req: Request, res: Response)
   }
 
   try {
-    const encodedUrl = encodeURI(url as string);
-    const response = await axios.get(encodedUrl, { responseType: 'arraybuffer' });
+    const decodedUrl = decodeURIComponent(url as string);
+
+    const response = await axios.get(decodedUrl, { responseType: 'arraybuffer' });
 
     res.setHeader('Content-Type', response.headers['content-type'] || 'image/jpeg');
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
@@ -152,5 +164,6 @@ router.get('/imageproxy', isAuthenticated(), async (req: Request, res: Response)
     return res.status(500).json({ error: 'Failed to fetch image from Tautulli.' });
   }
 });
+
 
 export default router;
