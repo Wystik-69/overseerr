@@ -12,6 +12,7 @@ import PlexWatchlistSlider from '@app/components/Discover/PlexWatchlistSlider';
 import RecentlyAddedSlider from '@app/components/Discover/RecentlyAddedSlider';
 import RecentRequestsSlider from '@app/components/Discover/RecentRequestsSlider';
 import PlexStreamsSlider from '@app/components/Discover/PlexStreamsSlider';
+import TautulliTopUsersSlider from '@app/components/Discover/TautulliTopUsersSlider';
 import StudioSlider from '@app/components/Discover/StudioSlider';
 import TvGenreSlider from '@app/components/Discover/TvGenreSlider';
 import MediaSlider from '@app/components/MediaSlider';
@@ -210,6 +211,9 @@ const Discover = () => {
         let sliderComponent: React.ReactNode;
 
         switch (slider.type) {
+          case DiscoverSliderType.TAUTULLI_TOP_USERS:
+            sliderComponent = <TautulliTopUsersSlider />;
+            break;
           case DiscoverSliderType.RECENTLY_ADDED:
             sliderComponent = <RecentlyAddedSlider />;
             break;

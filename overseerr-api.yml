@@ -22,6 +22,8 @@ tags:
     description: Endpoints related to search and discovery.
   - name: plexstreams
     description: Endpoints related to Plex streams fetch.
+  - name: tautulli
+    description: Endpoints related to Tautulli data fetch.
   - name: request
     description: Endpoints related to request management.
   - name: movies
@@ -4887,6 +4889,139 @@ paths:
                     name:
                       type: string
                       example: Genre Name
+  /tautulli/top-users:
+    get:
+      summary: Get top Tautulli users
+      description: |
+        Fetches a list of top users based on their media plays in the last 30 days, including the username, total plays, total duration, last play time, user profile link, and media-related images (poster, background, etc.).
+      tags:
+        - Tautulli
+      responses:
+        '200':
+          description: Top users returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        user:
+                          type: string
+                          description: Username of the top user.
+                          example: "JaneDoe"
+                        user_thumb:
+                          type: string
+                          description: The URL of the user's avatar (from Plex).
+                          example: "https://plex.tv/users/12345/avatar.jpg"
+                        total_plays:
+                          type: integer
+                          description: Total number of plays by the user.
+                          example: 150
+                        total_duration_seconds:
+                          type: integer
+                          description: Total duration of media watched by the user (in seconds).
+                          example: 7200
+                        total_duration:
+                          type: string
+                          description: The formatted total duration of media watched by the user (in hours and minutes).
+                          example: "2h 0m"
+                        last_play:
+                          type: string
+                          description: The date and time of the user's last play (formatted as a string).
+                          example: "2024-10-15 14:35:00"
+                        thumb:
+                          type: string
+                          description: The URL to the thumbnail image of the last media played by the user, proxied through the server.
+                          example: "/api/v1/tautulli/imageproxy?url=https://tautulli.server/metadata/12345/thumb.jpg"
+                        grandparent_thumb:
+                          type: string
+                          description: The URL to the grandparent (show) thumbnail image for TV series, proxied through the server.
+                          example: "/api/v1/tautulli/imageproxy?url=https://tautulli.server/metadata/12345/grandparent_thumb.jpg"
+                        art:
+                          type: string
+                          description: The URL to the background art of the last media played, proxied through the server.
+                          example: "/api/v1/tautulli/imageproxy?url=https://tautulli.server/metadata/12345/art.jpg"
+                        last_media:
+                          type: object
+                          properties:
+                            title:
+                              type: string
+                              description: The title of the last media played.
+                              example: "Breaking Bad"
+                            grandparent_title:
+                              type: string
+                              description: The title of the TV show for the episode played.
+                              example: "Breaking Bad"
+                            grandchild_title:
+                              type: string
+                              description: The title of the specific episode played.
+                              example: "Ozymandias"
+                            year:
+                              type: integer
+                              description: The release year of the media.
+                              example: 2013
+                        userProfileLink:
+                          type: string
+                          description: The URL to the Overseerr user profile.
+                          example: "/users/123"
+        '500':
+          description: Error while fetching top users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Failed to fetch top users from Tautulli."
+  /tautulli/imageproxy:
+    get:
+      summary: Proxy image request to Tautulli
+      description: |
+        Proxies an image request to the Tautulli server. This endpoint allows fetching media-related images such as posters, backgrounds, or user avatars by providing a `url` query parameter with the full Tautulli image URL.
+      tags:
+        - Tautulli
+      parameters:
+        - in: query
+          name: url
+          schema:
+            type: string
+          required: true
+          description: |
+            The full URL of the image on the Tautulli server (e.g., poster, background image, or avatar).
+          example: "http://192.168.0.50:8181/imageproxy?url=https://tautulli.server/metadata/12345/thumb.jpg"
+      responses:
+        '200':
+          description: The image fetched from Tautulli
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: Bad request (missing or invalid URL)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Image URL is required."
+        '500':
+          description: Internal server error (unable to fetch image)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Failed to fetch image from Tautulli."
   /plexstreams:
     get:
       summary: Get the current Plex streams
