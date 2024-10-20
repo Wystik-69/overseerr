@@ -1,10 +1,13 @@
 import { Router, Request, Response } from 'express';
 import axios from 'axios';
+import NodeCache from 'node-cache';
 import { isAuthenticated } from '@server/middleware/auth';
 import logger from '@server/logger';
 import { getSettings } from '@server/lib/settings';
 import { getRepository } from '@server/datasource';
 import { User } from '@server/entity/User';
+
+const imageCache = new NodeCache({ stdTTL: 86400, checkperiod: 600 });
 
 interface TautulliTopUser {
   user: string;
@@ -43,7 +46,6 @@ function buildTautulliImageUrl(path: string, ratingKey: string): string {
 
   return `http://${tautulliConfig.hostname}:${tautulliConfig.port}/pms_image_proxy?img=${encodedPath}&rating_key=${ratingKey}`;
 }
-
 
 function buildImageProxyUrl(path: string, ratingKey: string): string {
   return `/api/v1/tautulli/imageproxy?url=${encodeURIComponent(
@@ -152,11 +154,21 @@ router.get('/imageproxy', isAuthenticated(), async (req: Request, res: Response)
   try {
     const decodedUrl = decodeURIComponent(url as string);
 
+    const cachedImage = imageCache.get(decodedUrl);
+    if (cachedImage) {
+      logger.info(`Serving cached image for: ${decodedUrl}`);
+      res.setHeader('Content-Type', 'image/jpeg');
+      return res.send(cachedImage);
+    }
+
+    logger.info(`Fetching image from: ${decodedUrl}`);
     const response = await axios.get(decodedUrl, { responseType: 'arraybuffer' });
 
+    imageCache.set(decodedUrl, response.data);
+
     res.setHeader('Content-Type', response.headers['content-type'] || 'image/jpeg');
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
-    res.setHeader('Expires', new Date(Date.now() + 31536000000).toUTCString());
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.setHeader('Expires', new Date(Date.now() + 86400000).toUTCString());
 
     res.send(response.data);
   } catch (error) {
@@ -164,6 +176,5 @@ router.get('/imageproxy', isAuthenticated(), async (req: Request, res: Response)
     return res.status(500).json({ error: 'Failed to fetch image from Tautulli.' });
   }
 });
-
 
 export default router;

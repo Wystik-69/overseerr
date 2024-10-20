@@ -140,7 +140,7 @@ const TautulliTopUsersCard = ({ session }: TautulliTopUsersCardProps) => {
           )} / {playDuration}
         </div>
 
-        <div className="text-xs font-medium text-white sm:flex mt-2">
+        <div className="text-xs font-medium text-white overflow-hidden overflow-ellipsis whitespace-nowrap mt-2">
           {intl.formatMessage(
             { id: 'components.TautulliTopUsersCard.lastPlay', defaultMessage: 'Last play: {lastPlayDate} at {lastPlayTime}' },
             { lastPlayDate, lastPlayTime }
