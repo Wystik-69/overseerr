@@ -4,7 +4,7 @@
   "components.TautulliTopUsersCard.minutes": "{minutes, number} minute(s)",
   "components.TautulliTopUsersCard.plays": "{plays, number} play(s)",
   "components.TautulliTopUsersCard.lastPlay": "Last play: {lastPlayDate} at {lastPlayTime}",
-  "components.TautulliTopUsersCard.lastMedia": "Last media: {media}",
+  "components.TautulliTopUsersCard.lastMedia": "Last media: ",
   "components.PlexStreamsCard.statePlaying": "Playing",
   "components.PlexStreamsCard.statePaused": "Paused",
   "components.AirDateBadge.airedrelative": "Aired {relativeTime}",

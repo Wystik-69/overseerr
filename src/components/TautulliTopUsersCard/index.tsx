@@ -14,6 +14,11 @@ interface TautulliTopUsersCardProps {
     art: string | null;
     last_media: {
       title: string;
+      grandparent_title: string;
+      grandchild_title: string;
+      year: number | string;
+      grandparent_year: number | string;
+      overseerrUrl: string | null;
     };
     userProfileLink: string | null;
   };
@@ -70,7 +75,9 @@ const formatDateAndTime = (dateString: string, locale: string) => {
 
 const TautulliTopUsersCard = ({ session }: TautulliTopUsersCardProps) => {
   const intl = useIntl();
-  const [playDuration, setPlayDuration] = useState(formatDuration(session.total_duration_seconds, intl));
+  const [playDuration, setPlayDuration] = useState(
+    formatDuration(session.total_duration_seconds, intl)
+  );
 
   useEffect(() => {
     setPlayDuration(formatDuration(session.total_duration_seconds, intl));
@@ -80,17 +87,22 @@ const TautulliTopUsersCard = ({ session }: TautulliTopUsersCardProps) => {
     return <TautulliTopUsersCardPlaceholder />;
   }
 
-  const { lastPlayDate, lastPlayTime } = formatDateAndTime(session.last_play, intl.locale);
+  const { lastPlayDate, lastPlayTime } = formatDateAndTime(
+    session.last_play,
+    intl.locale
+  );
 
   return (
     <div className="relative flex w-72 overflow-hidden rounded-xl bg-gray-800 p-4 text-gray-400 shadow ring-1 ring-gray-700 sm:w-96">
       <div className="absolute inset-0 z-0">
-        <CachedImage
-          alt="Background Image"
-          src={session.art ?? ''}
-          layout="fill"
-          objectFit="cover"
-        />
+        {session.art && (
+          <CachedImage
+            alt="Background Image"
+            src={session.art}
+            layout="fill"
+            objectFit="cover"
+          />
+        )}
         <div
           className="absolute inset-0"
           style={{
@@ -137,32 +149,37 @@ const TautulliTopUsersCard = ({ session }: TautulliTopUsersCardProps) => {
           {intl.formatMessage(
             { id: 'components.TautulliTopUsersCard.plays', defaultMessage: '{plays} plays' },
             { plays: session.total_plays }
-          )} / {playDuration}
+          )}{' '}
+          / {playDuration}
         </div>
 
         <div className="text-xs font-medium text-white overflow-hidden overflow-ellipsis whitespace-nowrap mt-2">
           {intl.formatMessage(
-            { id: 'components.TautulliTopUsersCard.lastPlay', defaultMessage: 'Last play: {lastPlayDate} at {lastPlayTime}' },
+            {
+              id: 'components.TautulliTopUsersCard.lastPlay',
+              defaultMessage: 'Last play: {lastPlayDate} at {lastPlayTime}',
+            },
             { lastPlayDate, lastPlayTime }
           )}
         </div>
 
         <div className="text-xs font-medium text-white overflow-hidden overflow-ellipsis whitespace-nowrap mt-2">
           {intl.formatMessage(
-            { id: 'components.TautulliTopUsersCard.lastMedia', defaultMessage: 'Last media: {media}' },
-            { media: session.last_media.title }
+            {
+              id: 'components.TautulliTopUsersCard.lastMedia',
+              defaultMessage: 'Last media: ',
+            }
+          )}
+          {session.last_media.overseerrUrl ? (
+            <Link href={session.last_media.overseerrUrl}>
+              <a className="text-white hover:underline">
+                {session.last_media.title}
+              </a>
+            </Link>
+          ) : (
+            <span>{session.last_media.title}</span>
           )}
         </div>
-      </div>
-
-      <div className="transform-gpu scale-100 w-20 flex-shrink-0 overflow-hidden rounded-md shadow-sm transition duration-300 hover:scale-105 hover:shadow-md sm:w-28">
-        <CachedImage
-          src={session.thumb ?? ''}
-          alt="Poster"
-          layout="responsive"
-          width={600}
-          height={900}
-        />
       </div>
     </div>
   );

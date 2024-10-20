@@ -6,8 +6,11 @@ import useSWR from 'swr';
 
 const messages = defineMessages({
   topUsers: 'Plex Top Users (Last 30 days)',
-  emptyTopUsers: 'Top users will be shown here when enough data is available in Tautulli.',
-  tautulliNotConfigured: 'Please link Overseerr to Tautulli in order to show top users.',
+  emptyTopUsers:
+    'Top users will be shown here when enough data is available in Tautulli.',
+  tautulliNotConfigured:
+    'Please link Overseerr to Tautulli in order to show top users.',
+  errorLoadingTopUsers: 'Error loading top users.',
 });
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -56,6 +59,11 @@ const TautulliTopUsersSlider = () => {
                 art: user.art,
                 last_media: {
                   title: user.last_media.title,
+                  grandparent_title: user.last_media.grandparent_title,
+                  grandchild_title: user.last_media.grandchild_title,
+                  year: user.last_media.year,
+                  grandparent_year: user.last_media.grandparent_year,
+                  overseerrUrl: user.last_media.overseerrUrl,
                 },
                 userProfileLink: user.userProfileLink,
               }}
@@ -65,9 +73,9 @@ const TautulliTopUsersSlider = () => {
         />
       )}
 
-      {usersError && (
+      {usersError && usersError?.status !== 500 && (
         <div className="mt-16 mb-16 text-center font-medium text-gray-400">
-          {intl.formatMessage({ id: 'Error loading top users.' })}
+          {intl.formatMessage(messages.errorLoadingTopUsers)}
         </div>
       )}
     </>
