@@ -4,7 +4,7 @@ export enum DiscoverSliderType {
   TAUTULLI_TOP_USERS = 1,
   RECENTLY_ADDED,
   RECENT_REQUESTS,
-  PLEX_STREAMS,
+  TAUTULLI_CURRENT_STREAMS,
   PLEX_WATCHLIST,
   TRENDING,
   POPULAR_MOVIES,
@@ -52,7 +52,7 @@ export const defaultSliders: Partial<DiscoverSlider>[] = [
     order: 3,
   },
   {
-    type: DiscoverSliderType.PLEX_STREAMS,
+    type: DiscoverSliderType.TAUTULLI_CURRENT_STREAMS,
     enabled: true,
     isBuiltIn: true,
     order: 4,

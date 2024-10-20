@@ -4982,101 +4982,109 @@ paths:
                   message:
                     type: string
                     example: "Failed to fetch top users from Tautulli."
-  /plexstreams:
+  /tautulli/current-streams:
     get:
-      summary: Get the current Plex streams
+      summary: Get current active streams from Tautulli
       description: |
-        Fetches a list of currently active Plex streams, including the username, title of the movie or series (for TV shows), session ID, media type, playback state (e.g., playing, paused), current and total time of the media, the poster image, background image, release year, and the avatar URL of the user.
+        Fetches a list of currently active streams, including user information, media details, playback progress, and state (playing or paused).
       tags:
-        - Plex
+        - Tautulli
       responses:
         '200':
-          description: Active Plex streams returned
+          description: Current active streams returned
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  sessions:
+                  streams:
                     type: array
                     items:
                       type: object
                       properties:
-                        username:
+                        session_id:
                           type: string
-                          description: Username of the person streaming
-                          example: "JohnDoe"
+                          description: Unique identifier for the session.
+                          example: "1234567890abcdef"
+                        user:
+                          type: string
+                          description: Username of the user streaming.
+                          example: "JaneDoe"
+                        user_thumb:
+                          type: string
+                          description: URL of the user's avatar (from Plex).
+                          example: "https://plex.tv/users/12345/avatar.jpg"
                         title:
                           type: string
-                          description: |
-                            Title of the movie or the global series name for TV shows.
-                            For example, "Breaking Bad" for a TV series, or "Inception" for a movie.
-                          example: "Malcolm"
-                        sessionId:
+                          description: Title of the media being streamed.
+                          example: "Ozymandias"
+                        grandparent_title:
                           type: string
-                          description: Unique session identifier
-                          example: "abc123"
-                        mediaType:
+                          description: Title of the TV show (for episodes).
+                          example: "Breaking Bad"
+                        full_title:
                           type: string
-                          description: The type of media (movie or episode)
-                          example: "movie"
+                          description: Full title combining grandparent title and title.
+                          example: "Breaking Bad - Ozymandias"
+                        year:
+                          type: integer
+                          description: Release year of the media.
+                          example: 2013
+                        grandparent_year:
+                          type: integer
+                          description: Release year of the TV show.
+                          example: 2008
+                        overseerrUrl:
+                          type: string
+                          nullable: true
+                          description: URL to the media's page on Overseerr.
+                          example: "/tv/1396"
+                        userProfileLink:
+                          type: string
+                          nullable: true
+                          description: URL to the user's profile on Overseerr.
+                          example: "/users/123"
+                        thumb:
+                          type: string
+                          nullable: true
+                          description: URL to the thumbnail image of the media (from TMDB).
+                          example: "https://image.tmdb.org/t/p/w600_and_h900_bestv2/xyz.jpg"
+                        art:
+                          type: string
+                          nullable: true
+                          description: URL to the background art of the media (from TMDB).
+                          example: "https://image.tmdb.org/t/p/w1920_and_h800_multi_faces/abc.jpg"
+                        view_offset:
+                          type: integer
+                          description: Current playback position in milliseconds.
+                          example: 2940000
+                        duration:
+                          type: integer
+                          description: Total duration of the media in milliseconds.
+                          example: 3778000
+                        last_update:
+                          type: integer
+                          description: Timestamp of the last known playback state (in milliseconds since epoch).
+                          example: 1633036800000
+                        playback_rate:
+                          type: number
+                          description: Playback rate (e.g., 1.0 for normal speed).
+                          example: 1.0
                         state:
                           type: string
-                          description: The current playback state, e.g., playing, paused.
-                          example: "paused"
-                        currentTime:
-                          type: string
-                          description: The current playback position in the format HH:MM:SS.
-                          example: "0:13:27"
-                        totalTime:
-                          type: string
-                          description: The total duration of the media in the format HH:MM:SS.
-                          example: "1:46:44"
-                        posterUrl:
-                          type: string
-                          description: The URL of the media poster (movie poster or series poster for TV shows).
-                          example: "http://192.168.1.100:32400/library/metadata/12345/thumb?X-Plex-Token=abcd1234"
-                        backgroundUrl:
-                          type: string
-                          description: The URL of the media's background image (art for TV shows or movies).
-                          example: "http://192.168.1.100:32400/library/metadata/12345/art?X-Plex-Token=abcd1234"
-                        year:
-                          type: string
-                          description: The release year of the movie or TV show.
-                          example: "2011"
-                        avatarUrl:
-                          type: string
-                          description: The URL of the user's avatar.
-                          example: "https://plex.tv/users/abc123/avatar?X-Plex-Token=abcd1234"
-  /plexstreams/imageproxy:
-    get:
-      summary: Proxy image request to Plex
-      description: |
-        Proxies an image request to the Plex server. This endpoint allows fetching of media-related images such as posters or backgrounds through the Overseerr API by providing a `url` query parameter with the full Plex image URL.
-      tags:
-        - Plex
-      parameters:
-        - in: query
-          name: url
-          schema:
-            type: string
-          required: true
-          description: |
-            The full URL of the image on the Plex server (e.g., poster or background image).
-            This URL must include the necessary Plex token (`X-Plex-Token`) for authentication.
-          example: "http://192.168.0.50:32400/library/metadata/9625/thumb/1728141402?X-Plex-Token=Fyfhjkv8S5qZtT7ghAHk"
-      responses:
-        '200':
-          description: The image fetched from Plex
-          content:
-            image/jpeg:
-              schema:
-                type: string
-                format: binary
-        '400':
-          description: Bad request (missing or invalid URL)
+                          description: Playback state, either "playing" or "paused".
+                          example: "playing"
         '500':
-          description: Internal server error (unable to fetch image)
+          description: Error while fetching current streams
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Error message.
+                    example: "Unexpected response structure from Tautulli API."
   /discover/watchlist:
     get:
       summary: Get the Plex watchlist.

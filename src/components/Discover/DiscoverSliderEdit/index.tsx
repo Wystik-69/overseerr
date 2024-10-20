@@ -126,12 +126,14 @@ const DiscoverSliderEdit = ({
 
   const getSliderTitle = (slider: Partial<DiscoverSlider>): string => {
     switch (slider.type) {
+      case DiscoverSliderType.TAUTULLI_TOP_USERS:
+        return intl.formatMessage(sliderTitles.tautullitopusers);
       case DiscoverSliderType.RECENTLY_ADDED:
         return intl.formatMessage(sliderTitles.recentlyAdded);
       case DiscoverSliderType.RECENT_REQUESTS:
         return intl.formatMessage(sliderTitles.recentrequests);
-      case DiscoverSliderType.PLEX_STREAMS:
-        return intl.formatMessage(sliderTitles.plexstreams);
+      case DiscoverSliderType.TAUTULLI_CURRENT_STREAMS:
+        return intl.formatMessage(sliderTitles.tautullicurrentstreamss);
       case DiscoverSliderType.PLEX_WATCHLIST:
         return intl.formatMessage(sliderTitles.plexwatchlist);
       case DiscoverSliderType.TRENDING:

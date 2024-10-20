@@ -11,7 +11,7 @@ import NetworkSlider from '@app/components/Discover/NetworkSlider';
 import PlexWatchlistSlider from '@app/components/Discover/PlexWatchlistSlider';
 import RecentlyAddedSlider from '@app/components/Discover/RecentlyAddedSlider';
 import RecentRequestsSlider from '@app/components/Discover/RecentRequestsSlider';
-import PlexStreamsSlider from '@app/components/Discover/PlexStreamsSlider';
+import TautulliCurrentStreamsSlider from '@app/components/Discover/TautulliCurrentStreamsSlider';
 import TautulliTopUsersSlider from '@app/components/Discover/TautulliTopUsersSlider';
 import StudioSlider from '@app/components/Discover/StudioSlider';
 import TvGenreSlider from '@app/components/Discover/TvGenreSlider';
@@ -220,8 +220,8 @@ const Discover = () => {
           case DiscoverSliderType.RECENT_REQUESTS:
             sliderComponent = <RecentRequestsSlider />;
             break;
-          case DiscoverSliderType.PLEX_STREAMS:
-            sliderComponent = <PlexStreamsSlider />;
+          case DiscoverSliderType.TAUTULLI_CURRENT_STREAMS:
+            sliderComponent = <TautulliCurrentStreamsSlider />;
             break;
           case DiscoverSliderType.PLEX_WATCHLIST:
             sliderComponent = <PlexWatchlistSlider />;
